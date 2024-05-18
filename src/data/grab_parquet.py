@@ -48,12 +48,12 @@ def write_data_minio():
     else:
         print("Bucket " + bucket + " existe déjà")
     folder_path = "../../data/raw/"
-        for file_name in os.listdir(folder_path):
-            if file_name.endswith(".parquet"):
-                file_path = os.path.join(folder_path, file_name)
-                print(f"Téléchargement de {file_name} vers le bucket Minio {bucket}...")
-                client.fput_object(bucket, file_name, file_path)
-                print(f"Téléchargé {file_name}  vers le bucket Minio {bucket}")
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith(".parquet"):
+            file_path = os.path.join(folder_path, file_name)
+            print(f"Téléchargement de {file_name} vers le bucket Minio {bucket}...")
+            client.fput_object(bucket, file_name, file_path)
+            print(f"Téléchargé {file_name}  vers le bucket Minio {bucket}")
 
 if __name__ == '__main__':
     sys.exit(main())
