@@ -3,6 +3,7 @@ import urllib.request
 import pandas as pd
 from minio import Minio
 import sys
+import os
 
 def main():
     grab_data()
@@ -17,7 +18,7 @@ def grab_data() -> None:
     This methods takes no arguments and returns nothing.
     """
     base_url = "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_"
-    months = ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08"]
+    months = ["2023-01", "2023-02"]
     save_path = "../../data/raw/"
 
     if not os.path.exists(save_path):
@@ -26,9 +27,17 @@ def grab_data() -> None:
     for month in months:
         file_url = f"{base_url}{month}.parquet"
         file_path = os.path.join(save_path, f"yellow_tripdata_{month}.parquet")
-        print(f"Downloading {file_url} to {file_path}...")
-        urllib.request.urlretrieve(file_url, file_path)
-        print(f"Downloaded {file_url} to {file_path}")
+        try:
+            print(f"Téléchargement {file_url} to {file_path}...")
+            urllib.request.urlretrieve(file_url, file_path)
+            print(f"Téléchargé {file_url} to {file_path}")
+        except urllib.error.HTTPError as e:
+            print(f"Erreur HTTP: {e.code} lors de la tentative de téléchargement de {file_url}")
+        except urllib.error.URLError as e:
+            print(f"Erreur URL: {e.reason} lors de la tentative de téléchargement de {file_url}")
+        except Exception as e:
+            print(f"Erreur inattendue: {str(e)} lors de la tentative de téléchargement de {file_url}")
+
 
 def write_data_minio():
     """
@@ -47,6 +56,7 @@ def write_data_minio():
         client.make_bucket(bucket)
     else:
         print("Bucket " + bucket + " existe déjà")
+
     folder_path = "../../data/raw/"
     for file_name in os.listdir(folder_path):
         if file_name.endswith(".parquet"):
