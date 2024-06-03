@@ -4,7 +4,28 @@ import sys
 
 import pandas as pd
 from sqlalchemy import create_engine
+from minio import Minio
 
+def extract_data_from_minio():
+    client = Minio(
+        "localhost:9000",
+        secure=False,
+        access_key="minio",
+        secret_key="minio123"
+    )
+
+    bucket = "nyc-taxi-data"
+    folder_path = "../../data/raw/"
+
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    objects = client.list_objects(bucket)
+    for obj in objects:
+        file_name = obj.object_name
+        file_path = os.path.join(folder_path, file_name)
+        client.fget_object(bucket, file_name, file_path)
+        print(f"Téléchargé {file_name} de Minio vers {file_path}")
 
 def write_data_postgres(dataframe: pd.DataFrame) -> bool:
     """
@@ -60,6 +81,7 @@ def clean_column_name(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> None:
+    extract_data_from_minio()
     # folder_path: str = r'..\..\data\raw'
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the relative path to the folder
